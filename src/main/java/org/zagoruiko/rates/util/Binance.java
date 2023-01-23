@@ -14,15 +14,14 @@ public class Binance {
         Date date = new Date(time);
         return format.format(date);
     }
-    public static Map<String, List<String>> klines2CSVMap(List<List<Object>> data) {
+    public static Map<String, List<String>> klines2CSVMap(List<List<Object>> data,
+                                                          Map<String, List<String>> output) {
         List<String> rawList = data.stream().map(v ->
                         String.format("%s,%s,%s,%s,%s",
                                 convertTime((Long)v.get(0)),
                                 v.get(2), v.get(3), v.get(1), v.get(4)))
                 .collect(Collectors.toList());
-        //.collect(Collectors.joining("\n"));
 
-        Map<String, List<String>> output = new HashMap<>();
         for (String line : rawList) {
             output.putIfAbsent(line.substring(0,7), new ArrayList<>());
             output.get(line.substring(0,7)).add(line);
