@@ -1,4 +1,4 @@
-job "rates-update-job" {
+job "rates-load-job" {
   datacenters = ["home"]
   type        = "batch"
 
@@ -7,9 +7,9 @@ job "rates-update-job" {
     prohibit_overlap = true
   }
 
-  group "rates-update-job-group" {
+  group "rates-load-job-group" {
     count = 1
-    task "rates-update-job-task" {
+    task "rates-load-job-task" {
       driver = "docker"
       template {
         data = <<EOH
@@ -29,7 +29,7 @@ EOH
         network_mode = "host"
         extra_hosts = ["nuc2:10.8.0.8", "nuc3:10.8.0.6", "nuc1:10.8.0.9", "vm1:10.8.0.2"]
         privileged = true
-        image = "127.0.0.1:9999/docker/rates-update-job:0.0.5"
+        image = "127.0.0.1:9999/docker/rates-update-job:0.0.7"
         command = "bash"
         args = [
           "/app/run.sh",
@@ -37,8 +37,8 @@ EOH
       }
 
       resources {
-        cpu    = 1500
-        memory = 1500
+        cpu    = 1000
+        memory = 1000
       }
     }
   }

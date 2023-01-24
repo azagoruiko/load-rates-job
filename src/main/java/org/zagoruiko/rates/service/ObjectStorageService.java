@@ -33,12 +33,12 @@ public class ObjectStorageService implements StorageService {
 
     @Override
     public void storeAsCsvFile(String bucket, String table, String asset, String quote,
-                               Map<String, List<String>> output) throws IOException {
-        for (Map.Entry<String, List<String>> entry : output.entrySet()) {
+                               Map<String, Map<String, String>> output) throws IOException {
+        for (Map.Entry<String, Map<String, String>> entry : output.entrySet()) {
             File file = new File("." + File.separator + entry.getKey() + ".csv");
             FileWriter fileWriter = new FileWriter(file, false);
             PrintWriter printWriter = new PrintWriter(fileWriter);
-            printWriter.println(entry.getValue().stream().collect(Collectors.joining("\n")));
+            printWriter.println(entry.getValue().values().stream().collect(Collectors.joining("\n")));
             /***
              * [
              *   [

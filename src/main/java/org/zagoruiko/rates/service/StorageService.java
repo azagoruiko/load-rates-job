@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface StorageService {
     void storeAsCsvFile(String bucket, String table, String asset, String quote,
-                        Map<String, List<String>> output) throws IOException;
+                        Map<String, Map<String, String>> output) throws IOException;
 
     void createPartition(String bucket, String table, String asset, String quote) throws IOException;
 

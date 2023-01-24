@@ -78,7 +78,7 @@ public class Main {
                         currentMaxDate.getTime()
                 )));
                 Date maxDate = calendar.getTime();
-                Map<String, List<String>> output = new HashMap<>();
+                Map<String, Map<String, String>> output = new HashMap<>();
                 do {
                     Logger.getAnonymousLogger().log(Level.INFO, String.format("Querying %s %s-%s for %s",
                             table, pair[0], pair[1], maxDate));
