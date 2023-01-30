@@ -32,7 +32,7 @@ public class ObjectStorageService implements StorageService {
     }
 
     @Override
-    public void storeAsCsvFile(String bucket, String table, String asset, String quote,
+    public void storeAsCsvFile(String bucket, String exchange, String asset, String quote,
                                Map<String, Map<String, String>> output) throws IOException {
         for (Map.Entry<String, Map<String, String>> entry : output.entrySet()) {
             File file = new File("." + File.separator + entry.getKey() + ".csv");
@@ -60,7 +60,7 @@ public class ObjectStorageService implements StorageService {
 
             try {
                 PutObjectRequest putObjectRequest = new PutObjectRequest(bucket,
-                        String.format("%s/asset=%s/quote=%s/%s.csv", table, asset, quote, entry.getKey()),
+                        String.format("exchange=%s/asset=%s/quote=%s/%s.csv", exchange, asset, quote, entry.getKey()),
                         file);
 
                 this.s3Client.putObject(putObjectRequest);
@@ -73,12 +73,12 @@ public class ObjectStorageService implements StorageService {
     }
 
     @Override
-    public void createPartition(String bucket, String table, String asset, String quote) throws IOException {
+    public void createPartition(String bucket, String exchange, String asset, String quote) throws IOException {
         File file = new File("." + File.separator + "__PARTITION__");
         file.createNewFile();
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucket,
-                    String.format("%s/asset=%s/quote=%s/__PARTITION__", table, asset, quote),
+                    String.format("exchange=%s/asset=%s/quote=%s/__PARTITION__", exchange, asset, quote),
                     file);
 
             this.s3Client.putObject(putObjectRequest);
@@ -90,12 +90,12 @@ public class ObjectStorageService implements StorageService {
     }
 
     @Override
-    public void prepareTableFolder(String bucket, String table) throws IOException {
+    public void prepareTableFolder(String bucket, String exchange) throws IOException {
         File file = new File("." + File.separator + "__PARTITION__");
         file.createNewFile();
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucket,
-                    String.format("%s/__PARTITION__", table),
+                    String.format("exchange=%s/__PARTITION__", exchange),
                     file);
 
             this.s3Client.putObject(putObjectRequest);

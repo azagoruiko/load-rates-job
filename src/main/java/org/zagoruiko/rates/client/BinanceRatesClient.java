@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Component
+@Component("binanceRatesClient")
 public class BinanceRatesClient implements RatesClient {
 
     private RestTemplate restTemplate;

@@ -1,13 +1,18 @@
 package org.zagoruiko.rates;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.zagoruiko.rates.client.BinanceRatesClient;
+import org.zagoruiko.rates.client.RatesClient;
+import org.zagoruiko.rates.dto.ExchangePairDTO;
+import org.zagoruiko.rates.service.PortfolioService;
 import org.zagoruiko.rates.service.StorageService;
 import org.zagoruiko.rates.util.Binance;
+import org.zagoruiko.rates.util.Exmo;
 
 import java.io.IOException;
 import java.net.URL;
@@ -25,13 +30,28 @@ public class Main {
 
     private static Format format = new SimpleDateFormat("yyyy-MM-dd");
     private static Calendar calendar = Calendar.getInstance();
-    private BinanceRatesClient binanceRatesClient;
+    private RatesClient binanceRatesClient;
+    private RatesClient exmoRatesClient;
 
     private StorageService storageService;
 
+    private PortfolioService portfolioService;
+
     @Autowired
-    public void setBinanceRatesClient(BinanceRatesClient binanceRatesClient) {
+    @Qualifier("binanceRatesClient")
+    public void setBinanceRatesClient(RatesClient binanceRatesClient) {
         this.binanceRatesClient = binanceRatesClient;
+    }
+
+    @Autowired
+    @Qualifier("exmoRatesClient")
+    public void setExmoRatesClient(RatesClient exmoRatesClient) {
+        this.exmoRatesClient = exmoRatesClient;
+    }
+
+    @Autowired
+    public void setPortfolioService(PortfolioService portfolioService) {
+        this.portfolioService = portfolioService;
     }
 
     @Autowired
@@ -53,23 +73,16 @@ public class Main {
         storageService.prepareTableFolder("investing.com.rates", "main");
 
         Date today = new Date();
+        List<ExchangePairDTO> pairs = portfolioService.getAllPairs();
+        Map<String, List<ExchangePairDTO>> pairsMap = new HashMap<>();
+        pairs.forEach(pair -> {
+            pairsMap.computeIfAbsent(pair.getExchange(), x -> new ArrayList<>());
+            pairsMap.get(pair.getExchange()).add(pair);
+        });
         for (String table : new String[]{"binance"}) {
-            for (String[] pair : new String[][]{
-                    new String[]{"BTC", "USDT"},
-                    new String[]{"SOL", "USDT"},
-                    new String[]{"SOL", "BTC"},
-                    new String[]{"SOL", "ETH"},
-                    new String[]{"NEAR", "USDT"},
-                    new String[]{"NEAR", "BTC"},
-                    new String[]{"MATIC", "USDT"},
-                    new String[]{"MATIC", "BTC"},
-                    new String[]{"USDT", "UAH"},
-                    new String[]{"ETH", "USDT"},
-                    new String[]{"EUR", "USDT"},
-                    new String[]{"ETH", "BTC"}
-            }) {
+            for (ExchangePairDTO pair : pairs) {
                 List<List<Object>> data = null;
-                this.storageService.createPartition("currency", table, pair[0], pair[1]);
+                this.storageService.createPartition("currency", table, pair.getAsset(), pair.getQuote());
                 Date currentMaxDate = startDate;
 
                 System.out.format("!!!! %s - %s", currentMaxDate, startDate);
@@ -79,10 +92,25 @@ public class Main {
                 )));
                 Date maxDate = calendar.getTime();
                 Map<String, Map<String, String>> output = new HashMap<>();
+                String exchange = table;
                 do {
                     Logger.getAnonymousLogger().log(Level.INFO, String.format("Querying %s %s-%s for %s",
-                            table, pair[0], pair[1], maxDate));
-                    data = this.binanceRatesClient.loadContents(pair[0], pair[1], maxDate, 1000);
+                            table, pair.getAsset(), pair.getQuote(), maxDate));
+                    try {
+                        exchange = table;
+                        data = this.binanceRatesClient.loadContents(pair.getAsset(), pair.getQuote(), maxDate, 1000);
+                    } catch (Exception e) {
+                        Logger.getAnonymousLogger().log(Level.SEVERE, String.format("%s - %s pair does not exist here, trying EXMO", pair.getAsset(), pair.getQuote()));
+                        try {
+                            exchange = "exmo";
+                            data = this.exmoRatesClient.loadContents(pair.getAsset(), pair.getQuote(), maxDate, 1000);
+                            data = data;
+                        } catch (Exception e2) {
+                            Logger.getAnonymousLogger().log(Level.SEVERE, String.format("%s - %s pair does not exist here, try another exchange", pair.getAsset(), pair.getQuote()));
+                            data = new ArrayList<>();
+                            continue;
+                        }
+                    }
                     output = Binance.klines2CSVMap(data, output);
 
                     Logger.getAnonymousLogger().log(Level.INFO, String.format("Got %s for %s",
@@ -95,12 +123,15 @@ public class Main {
                         calendar.setTime(lastDate);
 
                         calendar.add(Calendar.DATE, 1);
-                        maxDate = calendar.getTime();
+
                         Logger.getAnonymousLogger().log(Level.INFO, String.format("Last date: %s, New start date: %s",
                                 format.format(lastDate), format.format(maxDate)));
+                    } else {
+                        calendar.add(Calendar.DATE, 1000);
                     }
-                } while (data.size() > 0);
-                this.storageService.storeAsCsvFile("currency", table, pair[0], pair[1], output);
+                    maxDate = calendar.getTime();
+                } while (data.size() > 0 || maxDate.getTime() < (new Date()).getTime());
+                this.storageService.storeAsCsvFile("currency", exchange, pair.getAsset(), pair.getQuote(), output);
             }
         }
     }

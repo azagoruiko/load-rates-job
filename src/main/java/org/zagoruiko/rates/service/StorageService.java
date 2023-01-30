@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 public interface StorageService {
-    void storeAsCsvFile(String bucket, String table, String asset, String quote,
+    void storeAsCsvFile(String bucket, String exchange, String asset, String quote,
                         Map<String, Map<String, String>> output) throws IOException;
 
-    void createPartition(String bucket, String table, String asset, String quote) throws IOException;
+    void createPartition(String bucket, String exchange, String asset, String quote) throws IOException;
 
-    void prepareTableFolder(String bucket, String table) throws IOException;
+    void prepareTableFolder(String bucket, String exchange) throws IOException;
 }
