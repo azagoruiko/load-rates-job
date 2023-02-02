@@ -11,6 +11,7 @@ import org.zagoruiko.rates.client.RatesClient;
 import org.zagoruiko.rates.dto.ExchangePairDTO;
 import org.zagoruiko.rates.service.PortfolioService;
 import org.zagoruiko.rates.service.StorageService;
+import org.zagoruiko.rates.util.AssetPair;
 import org.zagoruiko.rates.util.Binance;
 import org.zagoruiko.rates.util.Exmo;
 
@@ -21,8 +22,10 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Component
 @PropertySource(value = "classpath:application.properties")
@@ -72,15 +75,27 @@ public class Main {
         storageService.prepareTableFolder("currency", "binance");
         storageService.prepareTableFolder("investing.com.rates", "main");
 
-        Date today = new Date();
         List<ExchangePairDTO> pairs = portfolioService.getAllPairs();
-        Map<String, List<ExchangePairDTO>> pairsMap = new HashMap<>();
-        pairs.forEach(pair -> {
-            pairsMap.computeIfAbsent(pair.getExchange(), x -> new ArrayList<>());
-            pairsMap.get(pair.getExchange()).add(pair);
+        Set<AssetPair> pairsSet = pairs.stream()
+                .map(p -> new AssetPair(p.getAsset(), p.getQuote()))
+                .collect(Collectors.toSet());
+
+        Set<AssetPair> pairsSetToAdd = new HashSet<>();
+        pairsSet.forEach(p -> {
+            AssetPair btcPair = new AssetPair(p.getAsset(), "BTC");
+            if (!pairsSet.contains(btcPair) && !btcPair.getAsset().equals(btcPair.getQuote())) {
+                pairsSetToAdd.add(btcPair);
+            }
+            AssetPair usdtPair = new AssetPair(p.getAsset(), "USDT");
+            if (!pairsSet.contains(usdtPair) && !usdtPair.getAsset().equals(usdtPair.getQuote())) {
+                pairsSetToAdd.add(usdtPair);
+            }
         });
+
+        pairsSet.addAll(pairsSetToAdd);
+
         for (String table : new String[]{"binance"}) {
-            for (ExchangePairDTO pair : pairs) {
+            for (AssetPair pair : pairsSet) {
                 List<List<Object>> data = null;
                 this.storageService.createPartition("currency", table, pair.getAsset(), pair.getQuote());
                 Date currentMaxDate = startDate;
@@ -104,7 +119,6 @@ public class Main {
                         try {
                             exchange = "exmo";
                             data = this.exmoRatesClient.loadContents(pair.getAsset(), pair.getQuote(), maxDate, 1000);
-                            data = data;
                         } catch (Exception e2) {
                             Logger.getAnonymousLogger().log(Level.SEVERE, String.format("%s - %s pair does not exist here, try another exchange", pair.getAsset(), pair.getQuote()));
                             data = new ArrayList<>();
@@ -121,7 +135,6 @@ public class Main {
                                 (o1, o2) -> (Long) o1.get(6) >= (Long) o2.get(6) ? 1 : -1).get().get(6)
                         );
                         calendar.setTime(lastDate);
-
                         calendar.add(Calendar.DATE, 1);
 
                         Logger.getAnonymousLogger().log(Level.INFO, String.format("Last date: %s, New start date: %s",
