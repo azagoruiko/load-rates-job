@@ -20,7 +20,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public List<ExchangePairDTO> getAllPairs() {
-        return jdbcTemplate.query("SELECT DISTINCT exchange, \"baseAsset\", \"quoteAsset\" FROM trades.portfolio_by_exchange",
+        return jdbcTemplate.query("SELECT DISTINCT exchange, \"baseAsset\", \"quoteAsset\" FROM trades.trade_history",
                 (rs, rowNum) -> new ExchangePairDTO(rs.getString(1), rs.getString(2), rs.getString(3)));
     }
 }
