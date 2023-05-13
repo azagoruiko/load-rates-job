@@ -74,7 +74,7 @@ public class ObjectStorageService implements StorageService {
 
     @Override
     public void createPartition(String bucket, String exchange, String asset, String quote) throws IOException {
-        File file = new File("." + File.separator + "__PARTITION__");
+        File file = new File("/tmp/" + File.separator + "__PARTITION__");
         file.createNewFile();
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucket,
@@ -91,7 +91,7 @@ public class ObjectStorageService implements StorageService {
 
     @Override
     public void prepareTableFolder(String bucket, String exchange) throws IOException {
-        File file = new File("." + File.separator + "__PARTITION__");
+        File file = new File("/tmp/" + File.separator + "__PARTITION__");
         file.createNewFile();
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucket,
