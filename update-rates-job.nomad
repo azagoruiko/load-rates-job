@@ -28,7 +28,7 @@ EOH
       config {
         network_mode = "host"
         privileged = true
-        image = "10.8.0.5:5000/docker/rates-update-job:0.0.13"
+        image = "10.8.0.5:5000/docker/rates-update-job:0.0.14"
         command = "bash"
         args = [
           "/app/run.sh",

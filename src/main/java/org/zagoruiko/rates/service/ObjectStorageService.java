@@ -35,7 +35,7 @@ public class ObjectStorageService implements StorageService {
     public void storeAsCsvFile(String bucket, String exchange, String asset, String quote,
                                Map<String, Map<String, String>> output) throws IOException {
         for (Map.Entry<String, Map<String, String>> entry : output.entrySet()) {
-            File file = new File("." + File.separator + entry.getKey() + ".csv");
+            File file = new File("/tmp/" + File.separator + entry.getKey() + ".csv");
             FileWriter fileWriter = new FileWriter(file, false);
             PrintWriter printWriter = new PrintWriter(fileWriter);
             printWriter.println(entry.getValue().values().stream().collect(Collectors.joining("\n")));
