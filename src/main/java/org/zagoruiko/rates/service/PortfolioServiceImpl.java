@@ -1,6 +1,7 @@
 package org.zagoruiko.rates.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ import java.util.List;
 public class PortfolioServiceImpl implements PortfolioService {
     private JdbcTemplate jdbcTemplate;
 
-    public PortfolioServiceImpl(@Autowired JdbcTemplate jdbcTemplate) {
+    public PortfolioServiceImpl(@Autowired @Qualifier("pGtemplate") JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

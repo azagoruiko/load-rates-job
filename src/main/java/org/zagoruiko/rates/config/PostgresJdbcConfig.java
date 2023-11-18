@@ -42,7 +42,7 @@ public class PostgresJdbcConfig {
         return jdbcPassword;
     }
 
-    @Bean
+    @Bean(name = "pGjdbc")
     public DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(this.jdbcDriver);
@@ -53,7 +53,7 @@ public class PostgresJdbcConfig {
         return dataSource;
     }
 
-    @Bean
+    @Bean(name = "pGtemplate")
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(this.getDataSource());
     }

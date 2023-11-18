@@ -42,7 +42,7 @@ public class JdbcConfig {
         return jdbcPassword;
     }
 
-    @Bean
+    @Bean(name = "jdbc")
     public DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(this.jdbcDriver);
@@ -53,7 +53,7 @@ public class JdbcConfig {
         return dataSource;
     }
 
-    @Bean
+    @Bean(name = "template")
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(this.getDataSource());
     }
