@@ -16,6 +16,12 @@ job "rates-load-job" {
 OBJECT_STORAGE_ENDPOINT="{{ key "expenses/object/storage/fs.s3a.endpoint" }}"
 OBJECT_STORAGE_KEY="{{ key "expenses/object/storage/fs.s3a.access.key" }}"
 OBJECT_STORAGE_SECRET="{{ key "expenses/object/storage/fs.s3a.secret.key" }}"
+JDBC_URL="{{ key "jdbc.url" }}"
+JDBC_DRIVER="{{ key "jdbc.driver" }}"
+JDBC_USER="{{ key "jdbc.user" }}"
+JDBC_PASSWORD="{{ key "jdbc.password" }}"
+
+POSTGRES_METASTORE_JDBC_URL="{{ key "hive.postgres.metastore.jdbc.url" }}"
 POSTGRES_JDBC_URL="{{ key "postgres.jdbc.url" }}"
 POSTGRES_JDBC_DRIVER="{{ key "postgres.jdbc.driver" }}"
 POSTGRES_JDBC_USER="{{ key "postgres.jdbc.user" }}"
