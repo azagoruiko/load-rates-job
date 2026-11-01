@@ -1,5 +1,5 @@
 job "rates-load-job" {
-  datacenters = ["home"]
+  datacenters = ["dc1"]
   type        = "batch"
 
   periodic {
@@ -34,7 +34,7 @@ EOH
       config {
         network_mode = "host"
         privileged = true
-        image = "10.8.0.5:5000/docker/rates-update-job:0.0.15"
+        image = "docker-registry.service.consul:5001/docker/rates-update-job:0.0.1"
         command = "bash"
         args = [
           "/app/run.sh",
